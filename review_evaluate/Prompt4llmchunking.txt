@@ -1,0 +1,32 @@
+You are given a peer review report, and your task is to split the text into the following four sections:
+
+1. Summary: This section should briefly summarize the core content, objectives, and contributions of the paper.
+2. Strengths: This section should list the strengths of the paper, the aspects that the reviewer finds impressive or well-done.
+3. Weaknesses: This section should list the weaknesses or areas where the paper can be improved, according to the reviewer.
+4. Questions: This section should list any questions raised by the reviewer, which may relate to methods, experiments, conclusions, or requests for further clarification.
+
+Please refer to the following examples to guide you in splitting the given review text. If you're unsure whether a section exists in the text, refer to the examples to help you decide.
+
+Example 1:
+$Example1
+
+Example 2: 
+$Example2
+
+Now, you need to split the following review text. Please label each section according to the structure and examples provided above:
+
+Given Text:
+$Input
+
+Output Format Requirements:
+
+1. Summary: Please briefly summarize the paper's contributions and objectives.
+2. Strengths: List the strengths of the paper.
+3. Weaknesses: List the weaknesses of the paper.
+4. Questions: List any questions raised about the paper.
+
+Note:
+
+If a section is missing, you can write "None" or "N/A" (Not Applicable).
+You can refer to the examples above to assist with your decision-making process and understand what each section typically contains.
+Ensure the content is split exactly as given in the input text, without any modifications. Copy and paste the relevant parts for each section.

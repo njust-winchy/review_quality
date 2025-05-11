@@ -15,22 +15,61 @@ This study proposes a framework consisting of knowledge-guided fusion module and
 ## Directory structure
 
 <pre>
-originality_predict                               Root directory
-├── Code                                          Source code folder
-│   ├── baseline_model                            Baseline model folder
-│   │    ├── load_method.py                       Load data for Review and Method as input
-│   │    ├── main.py                              Train the model for Review and Feedback as input
-│   │    ├── method_main.py                       Train the model for Review and Method as input
-│   │    ├── model.py                             Model structure
-│   │    ├── predict.py                           Predict the result
-│   │    ├── split_data.py                        Load data for Review and Feedback as input
-│   │    ├── util.py                              Data process tool
-│   ├── Bi_interaction.py                         Proposed model structure      
-│   ├── p_predict.py                              Predict the result
-│   └── proposed_main.py                          Train the proposed model 
-│   └── read_data.py                              Load data for Review and Feedback
-├── Dataset                                       Dataset folder
-│   └── Dataset.json                              Preprocessed Dataset
+review_quality                                    Root directory
+├── claim_tagging                                 Code for claim tagging model
+│   ├── data_preprocess.py                        Process the dataset into training and testing sets
+│   ├── dataset.py                                Tokenize the data
+│   ├── model.py                                  Model architecture
+│   ├── params.py                                 Set training parameters
+│   ├── test.py                                   Run on the test set
+│   ├── train.py                                  Main function for model training
+│   ├── utils.py                                  Training process
+├── confidence                                    Code for confidence model
+│   ├── data_process.py                           Process the dataset into training and testing sets
+│   ├── load_data.py                              Tokenize the data
+│   ├── main.py                                   Main function for model training
+│   ├── model.py                                  Model architecture
+│   ├── predict.py                                Run on the test set
+│   ├── read_hedge.py                             Process the raw dataset into the required format
+│   ├── utils.py                                  Text processing methods
+├── constructive                                  Code for constructiveness model
+│   ├── preprocess_data.py                        Process the dataset into training and testing sets
+│   ├── dataset.py                                Tokenize the data
+│   ├── model.py                                  Model architecture
+│   ├── params.py                                 Set training parameters
+│   ├── test.py                                   Run on the test set
+│   ├── train.py                                  Main function for model training
+│   ├── utils.py                                  Training process
+├── evidence_identification                       Code for evidence identification model
+│   ├── data_preprocess.py                        Process the dataset into training and testing sets
+│   ├── dataset.py                                Tokenize the data
+│   ├── model.py                                  Model architecture
+│   ├── params.py                                 Set training parameters
+│   ├── test.py                                   Run on the test set
+│   ├── train.py                                  Main function for model training
+│   ├── utils.py                                  Training process
+├── politeness                                    Kindness model
+│   └── politeness_predition.ipynb                Politeness score prediction pipeline
+├── review_evaluate                               Quality score calculation
+│   └── model                                     Pre trained model architecture
+│   │   ├── claim_model.py                        Claim tagging model architecture
+│   │   ├── constructive_model.py                 Constructiveness tagging model architecture
+│   │   ├── evi_model.py                          Evidence identification model architecture
+│   │   ├── hedge_model.py                        Confidence model architecture
+│   ├── case_prompt.txt                           Prompt for case study
+│   ├── case_select.py                            Select samples for case study
+│   ├── case_study.py                             Code for case study
+│   ├── feture_extract.py                         Text feature extraction
+│   ├── llm_chunking.py                           Code for review chunking
+│   ├── politeness_calculate.py                   Kindness score calculation
+│   ├── politeness_preprocess.py                  Processing data for Kindness model
+│   ├── Preprocess_RAG.py                         Retrieve examples for review chunking
+│   ├── Prompt4llmchunking.txt                    Prompt for review chunking
+│   ├── quality_analysis.py                       Quality score analysis
+│   ├── quality_score.py                          Code for quality score calculation
+│   ├── review2chunk.py                           Process the results generated by LLM
+│   ├── score_analysis.py                         Five dimensional score analysis
+│   ├── score_calculate.py                        Five dimensional score calculation
 │
 └── README.md
 </pre>
@@ -55,3 +94,7 @@ We express our gratitude to the team at openreview.net for their dedication to a
 
 ## Citation
 Please cite the following paper if you use this code and dataset in your work.
+
+
+
+

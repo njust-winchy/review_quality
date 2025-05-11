@@ -88,10 +88,13 @@ System environment is set up according to the following configuration:
 ## Acknowledgement
 
 We express our gratitude to the team at openreview.net for their dedication to advancing transparency and openness in scientific communication. We utilized the aspect identifying tool developed by Yuan et al.（2022）(https://github.com/neulab/ReviewAdvisor).
-All the datasets we use come from Guo et al.（2023）(https://github.com/YanzhuGuo/SubstanReview.)
+The datasets we use come from Guo et al.（2023）(https://github.com/YanzhuGuo/SubstanReview.), Dycke et al.（2023）(https://github.com/UKPLab/nlpeer)
 
 >Yuan, W., Liu, P., & Neubig, G. (2022). Can we automate scientific reviewing?. Journal of Artificial Intelligence Research, 75, 171-212.<br>
+
 >Yanzhu Guo, Guokan Shang, Virgile Rennard, Michalis Vazirgiannis, and Chloé Clavel. 2023. Automatic Analysis of Substantiation in Scientific Peer Reviews. In Findings of the Association for Computational Linguistics: EMNLP 2023, pages 10198–10216, Singapore. Association for Computational Linguistics.<br>
+
+>Nils Dycke, Ilia Kuznetsov, and Iryna Gurevych. 2023. NLPeer: A Unified Resource for the Computational Study of Peer Review. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 5049–5073, Toronto, Canada. Association for Computational Linguistics.
 
 ## Citation
 Please cite the following paper if you use this code and dataset in your work.

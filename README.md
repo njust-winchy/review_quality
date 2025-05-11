@@ -4,12 +4,7 @@
 ## Overview
 
 **Dataset and source code for paper "A Unified Framework for Multi-Dimensional Evaluation of Peer Review Quality in Academic Paper".**
-
-
-
-## Model overview
-
-This study proposes a framework for Evaluation of Peer Review Quality in Academic Paper<br>
+The overall framework of this study is shown in here.
 
 ## Dataset
 The raw data and calculated data can be obtained from here().<br>

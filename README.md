@@ -1,15 +1,15 @@
-# review_quality
+# A Unified Framework for Multi-Dimensional Evaluation of Peer Review Quality in Academic Paper
 
 
 ## Overview
 
-**Dataset and source code for paper "".**
+**Dataset and source code for paper "A Unified Framework for Multi-Dimensional Evaluation of Peer Review Quality in Academic Paper".**
 
 
 
 ## Model overview
 
-This study proposes a framework consisting of knowledge-guided fusion module and two paralleled sub-tasks. The two paralleled sub-tasks are originality prediction (OP) and decision prediction (DP) respectively.<br>
+This study proposes a framework for Evaluation of Peer Review Quality in Academic Paper<br>
 
 
 ## Directory structure

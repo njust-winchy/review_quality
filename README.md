@@ -88,13 +88,19 @@ System environment is set up according to the following configuration:
 ## Acknowledgement
 
 We express our gratitude to the team at openreview.net for their dedication to advancing transparency and openness in scientific communication. We utilized the aspect identifying tool developed by Yuan et al.（2022）(https://github.com/neulab/ReviewAdvisor).
-The datasets we use come from Guo et al.（2023）(https://github.com/YanzhuGuo/SubstanReview.), Dycke et al.（2023）(https://github.com/UKPLab/nlpeer)
+The datasets we use come from Guo et al.（2023）(https://github.com/YanzhuGuo/SubstanReview.), Dycke et al.（2023）(https://github.com/UKPLab/nlpeer), Bharti et al.（2023）(https://github.com/PrabhatkrBharti/PolitePEER.git), Ghosal et al.（2022）(https://github.com/Tirthankar-Ghosal/HedgePeer-Dataset) Bharti et al. (2022) (https://github.com/PrabhatkrBharti/BetterPR.git)
 
 >Yuan, W., Liu, P., & Neubig, G. (2022). Can we automate scientific reviewing?. Journal of Artificial Intelligence Research, 75, 171-212.<br>
 
 >Yanzhu Guo, Guokan Shang, Virgile Rennard, Michalis Vazirgiannis, and Chloé Clavel. 2023. Automatic Analysis of Substantiation in Scientific Peer Reviews. In Findings of the Association for Computational Linguistics: EMNLP 2023, pages 10198–10216, Singapore. Association for Computational Linguistics.<br>
 
->Nils Dycke, Ilia Kuznetsov, and Iryna Gurevych. 2023. NLPeer: A Unified Resource for the Computational Study of Peer Review. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 5049–5073, Toronto, Canada. Association for Computational Linguistics.
+>Nils Dycke, Ilia Kuznetsov, and Iryna Gurevych. 2023. NLPeer: A Unified Resource for the Computational Study of Peer Review. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 5049–5073, Toronto, Canada. Association for Computational Linguistics.<br>
+
+>Bharti, P.K., Navlakha, M., Agarwal, M. et al. PolitePEER: does peer review hurt? A dataset to gauge politeness intensity in the peer reviews. Lang Resources & Evaluation 58, 1291–1313 (2024). https://doi.org/10.1007/s10579-023-09662-3<br>
+
+>T. Ghosal, K. K. Varanasi and V. Kordoni, "HedgePeer: A Dataset for Uncertainty Detection in Peer Reviews," 2022 ACM/IEEE Joint Conference on Digital Libraries (JCDL), Cologne, Germany, 2022, pp. 1-5.<br>
+
+>Bharti, P.K., Ghosal, T., Agarwal, M., Ekbal, A. (2022). BetterPR: A Dataset for Estimating the Constructiveness of Peer Review Comments. In: Silvello, G., et al. Linking Theory and Practice of Digital Libraries. TPDL 2022. Lecture Notes in Computer Science, vol 13541. Springer, Cham. https://doi.org/10.1007/978-3-031-16802-4_53<br>
 
 ## Citation
 Please cite the following paper if you use this code and dataset in your work.

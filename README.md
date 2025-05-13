@@ -78,10 +78,12 @@ System environment is set up according to the following configuration:
 - nltk==3.6.7
 - matplotlib==3.5.1
 - scikit-learn==1.1.3
-- pytorch 2.0.1
-- tqdm 4.65.0
-- numpy 1.24.1
-
+- pytorch==2.0.1
+- tqdm==4.65.0
+- numpy==1.24.1
+- pandas==2.2.3
+- openai==1.53.0
+- sentence-transformers==3.4.1
 ## Acknowledgement
 
 We express our gratitude to the team at openreview.net for their dedication to advancing transparency and openness in scientific communication. We utilized the aspect identifying tool developed by Yuan et al.（2022）(https://github.com/neulab/ReviewAdvisor).

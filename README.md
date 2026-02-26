@@ -102,7 +102,8 @@ The datasets we use come from Guo et al.（2023）(https://github.com/YanzhuGuo/
 >Bharti, P.K., Ghosal, T., Agarwal, M., Ekbal, A. (2022). BetterPR: A Dataset for Estimating the Constructiveness of Peer Review Comments. In: Silvello, G., et al. Linking Theory and Practice of Digital Libraries. TPDL 2022. Lecture Notes in Computer Science, vol 13541. Springer, Cham. https://doi.org/10.1007/978-3-031-16802-4_53<br>
 
 ## Citation
-Please cite the following paper if you use this code and dataset in your work.
+Please cite the following paper if you use this code and dataset in your work. 
+Wu
 
 
 

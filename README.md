@@ -1,4 +1,4 @@
-# A Unified Framework for Multi-Dimensional Evaluation of Peer Review Quality in Academic Paper
+# A Unified Framework for Multidimensional Evaluation of Peer-Review Quality
 
 
 ## Overview

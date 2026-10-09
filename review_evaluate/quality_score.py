@@ -6,24 +6,17 @@ import numpy as np
 # Config
 # ============================================================
 
-# 当前包含 binary constructiveness 的总 CSV
 INPUT_CSV = "all_reviews_probability.csv"
 
-# 最终 master 数据
 OUTPUT_CSV = "all_reviews_quality_critic_final.csv"
 
-# CRITIC 权重结果
 WEIGHT_OUTPUT_CSV = "critic_weights_final.csv"
 
-# 维度相关矩阵
 CORRELATION_OUTPUT_CSV = "critic_dimension_correlation.csv"
 
-# 正式使用 binary constructiveness
 CONSTRUCTIVE_COL = "constructive_score_binary"
 
-# 当前 hedge_score 是否表示 uncertainty ratio
-# hedge_score = uncertain sentences / total sentences
-# 因此 Confidence = 1 - hedge_score
+
 HEDGE_IS_UNCERTAINTY = True
 
 EPS = 1e-12
@@ -38,45 +31,6 @@ def critic_weight_method(data, eps=1e-12):
     CRITIC:
     Criteria Importance Through Intercriteria Correlation
 
-    每一列是一个评价维度。
-    每一行是一个 review。
-
-    所有输入指标均假定为正向指标：
-        值越高 = 质量越高。
-
-    CRITIC 同时考虑：
-    1. Contrast intensity:
-       指标自身在样本中的变异程度，用标准差衡量。
-
-    2. Conflict:
-       指标与其他指标之间的信息非冗余程度，
-       使用 Pearson correlation 衡量。
-
-    对第 j 个指标：
-
-        C_j = sigma_j * sum_k (1 - r_jk)
-
-        w_j = C_j / sum_j C_j
-
-    Returns
-    -------
-    weights : pd.Series
-        CRITIC 权重
-
-    normalized_data : pd.DataFrame
-        Min-Max normalization 后的数据
-
-    normalized_std : pd.Series
-        归一化后各维度的标准差
-
-    conflict : pd.Series
-        各维度与其他维度之间的信息冲突程度
-
-    information : pd.Series
-        CRITIC 信息量 C_j
-
-    correlation : pd.DataFrame
-        五个维度之间的 Pearson correlation matrix
     """
 
     X_raw = data.copy().astype(float)
@@ -100,12 +54,10 @@ def critic_weight_method(data, eps=1e-12):
 
         if abs(denominator) < eps:
 
-            # 如果某个维度没有任何变化
             X[col] = 0.0
 
         else:
 
-            # 所有指标均为正向指标
             X[col] = (
                 X_raw[col] - col_min
             ) / denominator
@@ -115,7 +67,6 @@ def critic_weight_method(data, eps=1e-12):
     # ========================================================
 
     # ddof=0:
-    # CRITIC 中用于相对比较，不影响最终权重排序
     normalized_std = X.std(
         axis=0,
         ddof=0
@@ -129,11 +80,8 @@ def critic_weight_method(data, eps=1e-12):
         method="pearson"
     )
 
-    # 如果存在常数列，会出现 NaN
-    # 常数列本身 std=0，因此最终信息量仍然为 0
     correlation = correlation.fillna(0.0)
 
-    # 对角线必须为 1
     np.fill_diagonal(
         correlation.values,
         1.0
@@ -280,8 +228,7 @@ for col in required_columns:
 
 if HEDGE_IS_UNCERTAINTY:
 
-    # hedge_score 越高 = uncertainty 越高
-    # 所以反转得到 certainty / confidence
+
 
     df["confidence_score"] = (
         1.0 - df["hedge_score"]
@@ -488,8 +435,7 @@ print(
 # Save normalized dimension scores
 # ============================================================
 
-# 建议保留下来。
-# 后面的 LOO、human evaluation、case study 都可以直接使用。
+
 
 df["confidence_score_norm"] = (
     normalized_data["Confidence"]
@@ -516,9 +462,7 @@ df["aspect_score_norm"] = (
 # Calculate final CRITIC quality score
 # ============================================================
 
-# 注意：
-# 这里使用的是 Min-Max normalized dimensions，
-# 与计算 CRITIC 权重时的数据完全一致。
+
 
 df["quality_score"] = (
     normalized_data

@@ -5,7 +5,8 @@
 
 **Dataset and source code for paper "A Unified Framework for Multidimensional Evaluation of Peer-Review Quality".**
 The overall framework of this study is shown in here.<br>
-[Overview.pdf](https://github.com/user-attachments/files/33242617/Overview.pdf)
+<img width="3423" height="816" alt="Overview" src="https://github.com/user-attachments/assets/6b1571ed-d968-4329-937c-c906e5a3628d" />
+
 
 
 ## Dataset

@@ -1,85 +1,675 @@
 import pandas as pd
-from tqdm import tqdm
 import numpy as np
-import os
 
-def entropy_weight_method(data, is_benefit_list=None):
+
+# ============================================================
+# Config
+# ============================================================
+
+# 当前包含 binary constructiveness 的总 CSV
+INPUT_CSV = "all_reviews_probability.csv"
+
+# 最终 master 数据
+OUTPUT_CSV = "all_reviews_quality_critic_final.csv"
+
+# CRITIC 权重结果
+WEIGHT_OUTPUT_CSV = "critic_weights_final.csv"
+
+# 维度相关矩阵
+CORRELATION_OUTPUT_CSV = "critic_dimension_correlation.csv"
+
+# 正式使用 binary constructiveness
+CONSTRUCTIVE_COL = "constructive_score_binary"
+
+# 当前 hedge_score 是否表示 uncertainty ratio
+# hedge_score = uncertain sentences / total sentences
+# 因此 Confidence = 1 - hedge_score
+HEDGE_IS_UNCERTAINTY = True
+
+EPS = 1e-12
+
+
+# ============================================================
+# CRITIC Weight Method
+# ============================================================
+
+def critic_weight_method(data, eps=1e-12):
     """
-    熵权法计算权重
-    :param data: 原始数据矩阵（DataFrame），每列为一个指标，每行为一个样本
-    :param is_benefit_list: 每列是否为正向指标（True 为越大越好，False 为越小越好）
-    :return: 各指标的权重（ndarray）
+    CRITIC:
+    Criteria Importance Through Intercriteria Correlation
+
+    每一列是一个评价维度。
+    每一行是一个 review。
+
+    所有输入指标均假定为正向指标：
+        值越高 = 质量越高。
+
+    CRITIC 同时考虑：
+    1. Contrast intensity:
+       指标自身在样本中的变异程度，用标准差衡量。
+
+    2. Conflict:
+       指标与其他指标之间的信息非冗余程度，
+       使用 Pearson correlation 衡量。
+
+    对第 j 个指标：
+
+        C_j = sigma_j * sum_k (1 - r_jk)
+
+        w_j = C_j / sum_j C_j
+
+    Returns
+    -------
+    weights : pd.Series
+        CRITIC 权重
+
+    normalized_data : pd.DataFrame
+        Min-Max normalization 后的数据
+
+    normalized_std : pd.Series
+        归一化后各维度的标准差
+
+    conflict : pd.Series
+        各维度与其他维度之间的信息冲突程度
+
+    information : pd.Series
+        CRITIC 信息量 C_j
+
+    correlation : pd.DataFrame
+        五个维度之间的 Pearson correlation matrix
     """
-    X = data.copy().astype(float)
 
-    # 1. 标准化
-    if is_benefit_list is None:
-        is_benefit_list = [True] * X.shape[1]
+    X_raw = data.copy().astype(float)
 
-    for j in range(X.shape[1]):
-        col = X.iloc[:, j]
-        if is_benefit_list[j]:
-            X.iloc[:, j] = (col - col.min()) / (col.max() - col.min() + 1e-12)
+    # ========================================================
+    # 1. Min-Max normalization
+    # ========================================================
+
+    X = pd.DataFrame(
+        index=X_raw.index,
+        columns=X_raw.columns,
+        dtype=float
+    )
+
+    for col in X_raw.columns:
+
+        col_min = X_raw[col].min()
+        col_max = X_raw[col].max()
+
+        denominator = col_max - col_min
+
+        if abs(denominator) < eps:
+
+            # 如果某个维度没有任何变化
+            X[col] = 0.0
+
         else:
-            X.iloc[:, j] = (col.max() - col) / (col.max() - col.min() + 1e-12)
 
-    # 2. 计算比例 pij
-    P = X / X.sum(axis=0)
+            # 所有指标均为正向指标
+            X[col] = (
+                X_raw[col] - col_min
+            ) / denominator
 
-    # 3. 计算熵值 ej
-    k = 1 / np.log(X.shape[0])
-    E = -k * (P * np.log(P + 1e-12)).sum(axis=0)  # 加上1e-12避免log(0)
+    # ========================================================
+    # 2. Standard deviation
+    # ========================================================
 
-    # 4. 计算冗余度 dj
-    D = 1 - E
+    # ddof=0:
+    # CRITIC 中用于相对比较，不影响最终权重排序
+    normalized_std = X.std(
+        axis=0,
+        ddof=0
+    )
 
-    # 5. 计算权重 wj
-    W = D / D.sum()
+    # ========================================================
+    # 3. Correlation matrix
+    # ========================================================
 
-    return W.values
+    correlation = X.corr(
+        method="pearson"
+    )
 
-hedge = []
-constructive = []
-substan = []
-politeness = []
-aspect = []
-file_list = os.listdir('split_data')
-w_dict = {}
-for file in tqdm(file_list):
-    df = pd.read_csv('split_data/'+file)
-    hedge_score = list(df.hedge_score)
-    constructive_score = list(df.constructive_score)
-    substan_score = list(df.substan_score)
-    politeness_score = list(df.politeness_score)
-    aspect_score = list(df.aspect_score)
-    hedge = hedge + hedge_score
-    constructive = constructive + constructive_score
-    substan = substan + substan_score
-    politeness = politeness + politeness_score
-    aspect = aspect + aspect_score
-w_dict['Confidence']=hedge
-w_dict['Constructive']=constructive
-w_dict['Substantiation']=substan
-w_dict['Kindness']=politeness
-w_dict['Comprehensiveness']=aspect
-data = pd.DataFrame(w_dict)
-weights = entropy_weight_method(data)
+    # 如果存在常数列，会出现 NaN
+    # 常数列本身 std=0，因此最终信息量仍然为 0
+    correlation = correlation.fillna(0.0)
 
-print(round(weights[0],3),round(weights[1],3),round(weights[2],3),round(weights[3],3),round(weights[4],3))
-print()
-# for file in tqdm(file_list):
-#     df = pd.read_csv('split_data/'+file)
-#     venue = file.split('.csv')[0]
-#     print(file)
-#     quality_list = []
-#     hedge_score = list(df.hedge_score)
-#     constructive_score = list(df.constructive_score)
-#     substan_score = list(df.substan_score)
-#     politeness_score = list(df.politeness_score)
-#     aspect_score = list(df.aspect_score)
-#     length = len(hedge_score)
-#     for i in tqdm(range(length)):
-#         quality_score = hedge_score[i]*weights[0]+constructive_score[i]*weights[1]+substan_score[i]*weights[2]+politeness_score[i]*weights[3]+aspect_score[i]*weights[4]
-#         quality_list.append(quality_score)
-#     df['quality_score'] = quality_list
-#     df.to_csv('quality_result/'+venue+'_quality.csv', index=False)
+    # 对角线必须为 1
+    np.fill_diagonal(
+        correlation.values,
+        1.0
+    )
+
+    # ========================================================
+    # 4. Conflict
+    # ========================================================
+
+    # conflict_j = sum_k(1 - r_jk)
+    conflict = (
+        1.0 - correlation
+    ).sum(axis=1)
+
+    # ========================================================
+    # 5. CRITIC information quantity
+    # ========================================================
+
+    information = (
+        normalized_std
+        * conflict
+    )
+
+    # ========================================================
+    # 6. CRITIC weights
+    # ========================================================
+
+    if information.sum() < eps:
+
+        weights = pd.Series(
+            np.ones(len(X.columns))
+            / len(X.columns),
+            index=X.columns
+        )
+
+    else:
+
+        weights = (
+            information
+            / information.sum()
+        )
+
+    return (
+        weights,
+        X,
+        normalized_std,
+        conflict,
+        information,
+        correlation
+    )
+
+
+# ============================================================
+# Load data
+# ============================================================
+
+print("=" * 75)
+print("Loading dataset")
+print("=" * 75)
+
+df = pd.read_csv(INPUT_CSV)
+
+print(f"Number of reviews: {len(df):,}")
+print(f"Number of columns: {len(df.columns)}")
+
+
+# ============================================================
+# Required columns
+# ============================================================
+
+required_columns = [
+    "hedge_score",
+    CONSTRUCTIVE_COL,
+    "substan_score",
+    "politeness_score",
+    "aspect_score"
+]
+
+missing_columns = [
+    col
+    for col in required_columns
+    if col not in df.columns
+]
+
+if missing_columns:
+
+    raise ValueError(
+        f"Missing columns: {missing_columns}"
+    )
+
+
+# ============================================================
+# Convert to numeric
+# ============================================================
+
+for col in required_columns:
+
+    df[col] = pd.to_numeric(
+        df[col],
+        errors="coerce"
+    )
+
+
+# ============================================================
+# Missing value check
+# ============================================================
+
+print("\nMissing values:")
+
+missing = df[
+    required_columns
+].isna().sum()
+
+print(missing)
+
+if missing.sum() > 0:
+
+    raise ValueError(
+        "Quality dimensions contain missing values. "
+        "Please check the input CSV."
+    )
+
+
+# ============================================================
+# Range check
+# ============================================================
+
+print("\n" + "=" * 75)
+print("ORIGINAL SCORE RANGE CHECK")
+print("=" * 75)
+
+for col in required_columns:
+
+    print(
+        f"{col:<30} "
+        f"min={df[col].min():.6f}, "
+        f"max={df[col].max():.6f}"
+    )
+
+
+# ============================================================
+# Confidence score
+# ============================================================
+
+if HEDGE_IS_UNCERTAINTY:
+
+    # hedge_score 越高 = uncertainty 越高
+    # 所以反转得到 certainty / confidence
+
+    df["confidence_score"] = (
+        1.0 - df["hedge_score"]
+    )
+
+else:
+
+    df["confidence_score"] = (
+        df["hedge_score"]
+    )
+
+
+# ============================================================
+# Final 5 dimensions
+# ============================================================
+
+critic_data = pd.DataFrame({
+
+    "Confidence":
+        df["confidence_score"],
+
+    "Constructiveness":
+        df[CONSTRUCTIVE_COL],
+
+    "Substantiation":
+        df["substan_score"],
+
+    "Kindness":
+        df["politeness_score"],
+
+    "Comprehensiveness":
+        df["aspect_score"]
+})
+
+
+# ============================================================
+# Check final range
+# ============================================================
+
+print("\n")
+print("=" * 75)
+print("FINAL FIVE-DIMENSION RANGE")
+print("=" * 75)
+
+for col in critic_data.columns:
+
+    print(
+        f"{col:<20} "
+        f"min={critic_data[col].min():.6f}, "
+        f"max={critic_data[col].max():.6f}"
+    )
+
+
+# ============================================================
+# Descriptive statistics
+# ============================================================
+
+dimension_statistics = pd.DataFrame({
+
+    "Mean":
+        critic_data.mean(),
+
+    "Std":
+        critic_data.std(),
+
+    "Variance":
+        critic_data.var(),
+
+    "Min":
+        critic_data.min(),
+
+    "Median":
+        critic_data.median(),
+
+    "Max":
+        critic_data.max()
+})
+
+dimension_statistics["CV"] = (
+    dimension_statistics["Std"]
+    / dimension_statistics["Mean"]
+)
+
+
+print("\n")
+print("=" * 75)
+print("DIMENSION STATISTICS")
+print("=" * 75)
+
+print(
+    dimension_statistics.round(6)
+)
+
+
+# ============================================================
+# Calculate CRITIC weights
+# ============================================================
+
+(
+    weights,
+    normalized_data,
+    normalized_std,
+    conflict,
+    information,
+    correlation
+) = critic_weight_method(
+    critic_data,
+    eps=EPS
+)
+
+
+# ============================================================
+# Correlation matrix
+# ============================================================
+
+print("\n")
+print("=" * 75)
+print("DIMENSION CORRELATION MATRIX")
+print("=" * 75)
+
+print(
+    correlation.round(6)
+)
+
+
+# ============================================================
+# Weight table
+# ============================================================
+
+weight_table = pd.DataFrame({
+
+    # 原始维度统计
+    "Mean":
+        critic_data.mean(),
+
+    "Std":
+        critic_data.std(),
+
+    "Variance":
+        critic_data.var(),
+
+    "CV":
+        critic_data.std()
+        / critic_data.mean(),
+
+    # CRITIC 中真正使用的统计量
+    "Normalized_Std":
+        normalized_std,
+
+    "Conflict":
+        conflict,
+
+    "Information":
+        information,
+
+    "CRITIC_Weight":
+        weights
+})
+
+
+print("\n")
+print("=" * 75)
+print("FINAL CRITIC WEIGHTS")
+print("=" * 75)
+
+print(
+    weight_table.round(6)
+)
+
+
+print("\nCRITIC weights:")
+
+for dimension, weight in weights.items():
+
+    print(
+        f"{dimension:<20}: "
+        f"{weight:.9f}"
+    )
+
+
+print(
+    f"\nWeight sum: "
+    f"{weights.sum():.12f}"
+)
+
+
+# ============================================================
+# Weight order
+# ============================================================
+
+print("\n")
+print("=" * 75)
+print("WEIGHT ORDER")
+print("=" * 75)
+
+print(
+    weights.sort_values(
+        ascending=False
+    )
+)
+
+
+# ============================================================
+# Save normalized dimension scores
+# ============================================================
+
+# 建议保留下来。
+# 后面的 LOO、human evaluation、case study 都可以直接使用。
+
+df["confidence_score_norm"] = (
+    normalized_data["Confidence"]
+)
+
+df["constructive_score_norm"] = (
+    normalized_data["Constructiveness"]
+)
+
+df["substan_score_norm"] = (
+    normalized_data["Substantiation"]
+)
+
+df["politeness_score_norm"] = (
+    normalized_data["Kindness"]
+)
+
+df["aspect_score_norm"] = (
+    normalized_data["Comprehensiveness"]
+)
+
+
+# ============================================================
+# Calculate final CRITIC quality score
+# ============================================================
+
+# 注意：
+# 这里使用的是 Min-Max normalized dimensions，
+# 与计算 CRITIC 权重时的数据完全一致。
+
+df["quality_score"] = (
+    normalized_data
+    .mul(
+        weights,
+        axis=1
+    )
+    .sum(axis=1)
+)
+
+
+# ============================================================
+# Quality score distribution
+# ============================================================
+
+quality = df["quality_score"]
+
+quality_mean = quality.mean()
+
+quality_std = quality.std()
+
+quality_median = quality.median()
+
+quality_q1 = quality.quantile(0.25)
+
+quality_q3 = quality.quantile(0.75)
+
+quality_iqr = (
+    quality_q3
+    - quality_q1
+)
+
+
+print("\n")
+print("=" * 75)
+print("FINAL CRITIC QUALITY SCORE DISTRIBUTION")
+print("=" * 75)
+
+print(
+    quality.describe(
+        percentiles=[
+            0.01,
+            0.05,
+            0.10,
+            0.25,
+            0.50,
+            0.75,
+            0.90,
+            0.95,
+            0.99
+        ]
+    )
+)
+
+
+print("\nKey statistics:")
+
+print(
+    f"Mean:                "
+    f"{quality_mean:.6f}"
+)
+
+print(
+    f"Std:                 "
+    f"{quality_std:.6f}"
+)
+
+print(
+    f"Median:              "
+    f"{quality_median:.6f}"
+)
+
+print(
+    f"Q1:                  "
+    f"{quality_q1:.6f}"
+)
+
+print(
+    f"Q3:                  "
+    f"{quality_q3:.6f}"
+)
+
+print(
+    f"IQR:                 "
+    f"{quality_iqr:.6f}"
+)
+
+print(
+    f"Min:                 "
+    f"{quality.min():.6f}"
+)
+
+print(
+    f"Max:                 "
+    f"{quality.max():.6f}"
+)
+
+
+# ============================================================
+# Save CRITIC weights
+# ============================================================
+
+weight_table.to_csv(
+    WEIGHT_OUTPUT_CSV,
+    encoding="utf-8-sig"
+)
+
+
+# ============================================================
+# Save dimension correlation matrix
+# ============================================================
+
+correlation.to_csv(
+    CORRELATION_OUTPUT_CSV,
+    encoding="utf-8-sig"
+)
+
+
+# ============================================================
+# Save final master CSV
+# ============================================================
+
+df.to_csv(
+    OUTPUT_CSV,
+    index=False,
+    encoding="utf-8-sig"
+)
+
+
+# ============================================================
+# Final summary
+# ============================================================
+
+print("\n")
+print("=" * 75)
+print("FILES SAVED")
+print("=" * 75)
+
+print(
+    f"CRITIC weights: "
+    f"{WEIGHT_OUTPUT_CSV}"
+)
+
+print(
+    f"Dimension correlation: "
+    f"{CORRELATION_OUTPUT_CSV}"
+)
+
+print(
+    f"Final master CSV: "
+    f"{OUTPUT_CSV}"
+)
+
+print("\nFinished.")
